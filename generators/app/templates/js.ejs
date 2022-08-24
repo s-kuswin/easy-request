@@ -1,0 +1,21 @@
+/**
+* <%=title %> 
+* <%=description %>
+*/
+import { request } from './request';
+export default class <%= className %> {
+  <% methods.forEach(method => {%>
+    /** 
+    * <%=method.summary %>
+    * @method <%=method.method %>
+    * @name <%=className %><%=method.summary%>
+    */
+    <%=method.methodName %>(data){
+      return request({
+        url:'<%=method.path %>',
+        method: '<%=method.method %>',
+        data: data
+      })
+    }
+  <%})%>
+}
