@@ -52,7 +52,7 @@ module.exports = class extends Generator {
         type: "input",
         name: "profix",
         message: "请输入接口前缀",
-        default: "/liveadmin/v1"
+        default: ""
       }
     ];
 
@@ -65,8 +65,7 @@ module.exports = class extends Generator {
       type: "input",
       name: "swaggerUrl",
       message: "请输入swagger文档连接",
-      default:
-        "http://rrzb-client-admin.test-rrzhibo-admin.test.rrinner.cn/v2/api-docs"
+      default: ""
     };
 
     secondPrompts.push(
