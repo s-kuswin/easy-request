@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-return */
-let _ = require("lodash");
+import _ from "lodash";
 
 let getViewForSwagger = function(opt) {
   const { swagger, className, profix } = opt;
@@ -64,4 +64,6 @@ function getPathToMethodName(m, path) {
   return m.toLowerCase() + result[0].toUpperCase() + result.substring(1);
 }
 
-module.exports.getViewForSwagger = getViewForSwagger;
+export default {
+  getViewForSwagger
+}
