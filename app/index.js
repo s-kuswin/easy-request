@@ -8,14 +8,9 @@ import symbols from "log-symbols"
 import swaggerJs from "./dataAnalysis/swaggerJs.js"
 import axios from "axios"
 import ora from "ora"
-const __dirname = path.resolve(); 
-
-// 当前命令所在的目录
-console.log('resolve   : ' + path.resolve('./'))
-// resolve   : /workspace
-
-// 当前命令所在的目录
-console.log('cwd       : ' + process.cwd())
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let firstPrompList = [
   {
@@ -114,7 +109,6 @@ async function writing(props) {
     });
     const template = templatePath(templateType)
     const animalKotlin = ejs.render(fs.readFileSync(template, 'utf8'), swaggerData);
-    console.log(animalKotlin);
     writeIfModified(
       destinationPath(outPutFile),
       animalKotlin
@@ -128,7 +122,7 @@ async function writing(props) {
 }
 
 function templatePath(type) {
-  return `${path.resolve('./')}/template/${type}`
+  return `${__dirname.toString().split('\\app')[0]}\\template\\${type}`
 }
 
 function destinationPath(outPutFile) {
