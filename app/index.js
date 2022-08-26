@@ -16,9 +16,9 @@ let firstPrompList = [
   {
     type: "list",
     name: "isType",
-    message: "请选择swagger类型",
-    choices: ["获取swagger数据URL", "swagger文件"],
-    default: "获取swagger数据URL"
+    message: "请选择swagger数据获取方式",
+    choices: ["从URL获取swagger数据", "上传swagger文件"],
+    default: "从URL获取swagger数据"
   }
 ]
 
@@ -32,9 +32,9 @@ const secondPrompList = [
   {
     type: "list",
     name: "templateType",
-    message: "请选择模板文件",
-    choices: ["js.ejs"],
-    default: "js.ejs"
+    message: "请选择生成文件类型",
+    choices: ["js"],
+    default: "js"
   },
   {
     type: "input",
@@ -59,18 +59,17 @@ const urlPrompt = {
   type: "input",
   name: "swaggerUrl",
   message: "请输入swagger文档连接",
-  default: "http://rrzb-client-admin.test-rrzhibo-admin.test.rrinner.cn/v2/api-docs"
+  default: "https://petstore.swagger.io/v2/swagger.json"
 };
 
 inquirer.prompt(firstPrompList).then(firstAnswer => {
   secondPrompList.push(
-    firstAnswer.isType === "swagger文件" ? filePrompt : urlPrompt
+    firstAnswer.isType === "上传swagger文件" ? filePrompt : urlPrompt
   );
   inquirer.prompt(secondPrompList).then(secondAnswer =>{
     console.log(secondAnswer);
     secondAnswer.isType = firstAnswer.isType;
     writing(secondAnswer)
-    // console.log(__dirname);
   })
 })
 
@@ -84,16 +83,16 @@ async function writing(props) {
     let swaggerUrl = props.swaggerUrl;
     let profix = props.profix;
     let outPutFile =
-      props.templateType === "js.ejs"
+      props.templateType === "js"
         ? props.outPutFile + ".js"
         : props.outPutFile + ".ts";
     let sourceFile;
-    if (props.isType !== "swagger文件") {
+    if (props.isType !== "上传swagger文件") {
       let res = await axios.get(swaggerUrl);
       sourceFile = res.data;
     } else {
       sourceFile = props.sourceFile
-        ? this.fs.read(props.sourceFile)
+        ? JSON.parse(fs.readFileSync(props.sourceFile, 'utf8'))
         : props.sourceFile;
     }
   
@@ -107,6 +106,7 @@ async function writing(props) {
       className: clsName,
       profix: profix
     });
+    console.log(swaggerData);
     const template = templatePath(templateType)
     const animalKotlin = ejs.render(fs.readFileSync(template, 'utf8'), swaggerData);
     writeIfModified(
@@ -122,7 +122,7 @@ async function writing(props) {
 }
 
 function templatePath(type) {
-  return `${__dirname.toString().split('\\app')[0]}\\template\\${type}`
+  return path.join(__dirname, `../template/${type}.ejs`)
 }
 
 function destinationPath(outPutFile) {
