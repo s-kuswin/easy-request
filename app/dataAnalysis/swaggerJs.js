@@ -1,8 +1,10 @@
 /* eslint-disable no-useless-return */
 import _ from "lodash";
+let pageMap = new Map();
 
 let getViewForSwagger = function(opt) {
-  const { swagger, className, profix } = opt;
+  const { swagger, profix } = opt;
+  let subDocumentData = getSubDocument(swagger.tags, swagger.paths, swagger.info)
   let authorizedMethods = [
     "GET",
     "POST",
@@ -19,12 +21,6 @@ let getViewForSwagger = function(opt) {
     "UNLOCK",
     "PROPFIND"
   ];
-  let data = {
-    title: swagger.info.title,
-    description: swagger.info.description,
-    className: className,
-    methods: []
-  };
 
   _.forEach(swagger.paths, function(api, path) {
     const fullPath = profix + path;
@@ -43,11 +39,33 @@ let getViewForSwagger = function(opt) {
         method: m,
         summary: op.summary
       };
-      data.methods.push(method);
+      _.each(op.tags, (tag) => {
+        let page = pageMap.get(tag)
+        if(page) {
+          subDocumentData[page].methods.push(method);
+        }
+      })
     });
   });
-  return data;
+  return subDocumentData;
 };
+
+
+function getSubDocument(tags, paths, info) {
+  let documentData = {}
+  _.each(tags,(tag) => {
+    const pageName = normalizeName(tag.description)
+    pageMap.set(tag.name, pageName)
+    documentData[pageName] = {
+      title: tag.name,
+      className: pageName,
+      description: `${ info.title } - ${ info.description } - ${ tag.name }` ,
+      methods:[]
+    }
+  })
+
+  return documentData
+}
 
 function normalizeName(id) {
   return id.replace(/\.|-|\{|\}|\s/g, "_");

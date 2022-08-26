@@ -8,6 +8,7 @@ import symbols from "log-symbols"
 import swaggerJs from "./dataAnalysis/swaggerJs.js"
 import axios from "axios"
 import ora from "ora"
+import _ from "lodash";
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,12 +25,6 @@ let firstPrompList = [
 
 const secondPrompList = [
   {
-    type: "input",
-    name: "className",
-    message: "请输入生成器 className",
-    default: "Api"
-  },
-  {
     type: "list",
     name: "templateType",
     message: "请选择生成文件类型",
@@ -38,8 +33,8 @@ const secondPrompList = [
   },
   {
     type: "input",
-    name: "outPutFile",
-    message: "请输入输出文件名(没有文件后缀)",
+    name: "outPutFolder",
+    message: "请输入输出文件夹",
     default: "api"
   },
   {
@@ -82,10 +77,7 @@ async function writing(props) {
     let templateType = props.templateType;
     let swaggerUrl = props.swaggerUrl;
     let profix = props.profix;
-    let outPutFile =
-      props.templateType === "js"
-        ? props.outPutFile + ".js"
-        : props.outPutFile + ".ts";
+    let outPutFolder = props.outPutFolder;
     let sourceFile;
     if (props.isType !== "上传swagger文件") {
       let res = await axios.get(swaggerUrl);
@@ -106,15 +98,23 @@ async function writing(props) {
       className: clsName,
       profix: profix
     });
-    console.log(swaggerData);
-    const template = templatePath(templateType)
-    const animalKotlin = ejs.render(fs.readFileSync(template, 'utf8'), swaggerData);
-    writeIfModified(
-      destinationPath(outPutFile),
-      animalKotlin
-    );
+
+    _.forEach(swaggerData, function(swaggerList, pageNmae){
+      let outPutFile =
+      props.templateType === "js"
+        ? pageNmae + ".js"
+        : pageNmae + ".ts";
+      const template = templatePath(templateType)
+      const animalKotlin = ejs.render(fs.readFileSync(template, 'utf8'), swaggerList);
+      writeIfModified(
+        destinationFolder(outPutFolder),
+        destinationPath(outPutFolder,outPutFile),
+        animalKotlin
+      );
+    })
+
     spinner.succeed()
-    console.log(chalk.green(symbols.success), chalk.green(`create ${outPutFile} successfully!\n`))
+    console.log(chalk.green(symbols.success), chalk.green(`create ${outPutFolder} successfully!\n`))
   } catch(e) {
     console.log(chalk.red(e))
     spinner.fail()
@@ -125,11 +125,14 @@ function templatePath(type) {
   return path.join(__dirname, `../template/${type}.ejs`)
 }
 
-function destinationPath(outPutFile) {
-  return `${process.cwd()}/${outPutFile}`
+function destinationPath(outPutFolder,outPutFile) {
+  return path.join(process.cwd(), `/${outPutFolder}/${outPutFile}`)
+}
+function destinationFolder(outPutFolder) {
+  return path.join(process.cwd(), `/${outPutFolder}`)
 }
 
-function writeIfModified(filename, newContent) {
+function writeIfModified(outPutFolder, filename, newContent) {
   try {
     const oldContent = fs.readFileSync(filename, 'utf8');
     if(oldContent == newContent) {
@@ -137,6 +140,6 @@ function writeIfModified(filename, newContent) {
       return;
     }
   }catch(err) {}
-
+  fs.mkdir(outPutFolder,()=>{});
   fs.writeFileSync(filename, newContent)
 }
