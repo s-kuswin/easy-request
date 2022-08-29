@@ -4,7 +4,7 @@ let pageMap = new Map();
 
 let getViewForSwagger = function(opt) {
   const { swagger, profix } = opt;
-  let subDocumentData = getSubDocument(swagger.tags, swagger.paths, swagger.info)
+  let subDocumentData = getSubDocument(swagger.tags, swagger.info)
   let authorizedMethods = [
     "GET",
     "POST",
@@ -39,6 +39,10 @@ let getViewForSwagger = function(opt) {
         method: m,
         summary: op.summary
       };
+
+
+
+      
       _.each(op.tags, (tag) => {
         let page = pageMap.get(tag)
         if(page) {
@@ -51,13 +55,13 @@ let getViewForSwagger = function(opt) {
 };
 
 
-function getSubDocument(tags, paths, info) {
+function getSubDocument(tags, info) {
   let documentData = {}
   _.each(tags,(tag) => {
-    const pageName = normalizeName(tag.description)
+    const pageName = normalizeName(tag.name)
     pageMap.set(tag.name, pageName)
     documentData[pageName] = {
-      title: tag.name,
+      title: tag.description,
       className: pageName,
       description: `${ info.title } - ${ info.description } - ${ tag.name }` ,
       methods:[]
