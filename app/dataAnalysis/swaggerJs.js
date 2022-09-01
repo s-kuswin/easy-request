@@ -39,10 +39,6 @@ let getViewForSwagger = function(opt) {
         method: m,
         summary: op.summary
       };
-
-
-
-      
       _.each(op.tags, (tag) => {
         let page = pageMap.get(tag)
         if(page) {
